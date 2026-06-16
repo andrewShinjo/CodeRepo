@@ -16,22 +16,6 @@
 (defvar due-flashcards nil "Current list of due cards in a study session.")
 (defvar randomized-queue nil "Current list of markers for the processing queue.")
 
-;;; BI Implementation
-
-(defun org-study--save-bi () nil)
-(defun org-study--parse-bi () nil)
-
-(defun org-study--props-bi ()
-  "Returns a list of BI property names."
-  (list BI-DUE-FORWARD-PROPERTY
-	BI-INTERVAL-FORWARD-PROPERTY
-	BI-EASE-FACTOR-FORWARD-PROPERTY
-	BI-REPETITION-FORWARD-PROPERTY
-	BI-DUE-REVERSE-PROPERTY
-	BI-INTERVAL-REVERSE-PROPERTY
-	BI-EASE-FACTOR-REVERSE-PROPERTY
-	BI-REPETITION-REVERSE-PROPERTY))
-
 ;;; CLOZE Implementation
 
 (defun org-study--save-cloze () nil)
@@ -64,9 +48,9 @@
 	       (:parse . andy/org-study/flashcard-single/parse)
 	       (:props . andy/org-study/flashcard-single/properties)))
 
-    (BI . ((:save . org-study--save-bi)
-	   (:parse . org-study--parse-bi)
-	   (:props . org-study--props-bi)))
+    (BI . ((:save . andy/org-study/flashcard-bi/save)
+	   (:parse . andy/org-study/flashcard-bi/parse)
+	   (:props . andy/org-study/flashcard-bi/properties)))
 
     (CLOZE . ((:save . org-study--save-cloze)
 	      (:parse . org-study--parse-cloze)
