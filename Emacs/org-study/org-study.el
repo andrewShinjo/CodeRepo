@@ -13,10 +13,6 @@
 (defvar due-flashcards nil "Current list of due cards in a study session.")
 (defvar randomized-queue nil "Current list of markers for the processing queue.")
 
-(defun org-study--get-handler (type operation)
-  "Get handler function for TYPE and OPERATION (:save, :parse, :interval)."
-  (alist-get operation (alist-get type org-study--flashcard-handlers)))
-
 ;;; --- UI & Mode ---
 
 (define-derived-mode flashcard-mode org-mode "FlashcardMode"
@@ -50,7 +46,7 @@
   (interactive)
   (let ((flashcard (car due-flashcards)))
     (setcar due-flashcards (andy/org-study/update-card-sm2 flashcard 5))
-    (andy/org-study/save-flashcard)
+    (andy/org-study/flashcard/save)
     (pop due-flashcards)
     (andy/org-study/display-flashcard-question)))
 
@@ -58,7 +54,7 @@
   (interactive)
   (let ((flashcard (car due-flashcards)))
     (setcar due-flashcards (andy/org-study/update-card-sm2 flashcard 3))
-    (andy/org-study/save-flashcard)
+    (andy/org-study/flashcard/save)
     (pop due-flashcards)
     (andy/org-study/display-flashcard-question)))
 
@@ -66,7 +62,7 @@
   (interactive)
   (let ((flashcard (car due-flashcards)))
     (setcar due-flashcards (andy/org-study/update-card-sm2 flashcard 1))
-    (andy/org-study/save-flashcard)
+    (andy/org-study/flashcard-save)
     (pop due-flashcards)
     (andy/org-study/display-flashcard-question)))
 
@@ -82,23 +78,6 @@
         (aset vec i (aref vec j))
         (aset vec j tmp)))
     (append vec nil)))
-
-(defun andy/org-study/save-flashcard ()
-  (let* ((flashcard (car due-flashcards))
-         (id (plist-get flashcard :ID))
-         (due (plist-get flashcard :due))
-         (repetition (plist-get flashcard :repetition))
-         (ease-factor (plist-get flashcard :ease-factor))
-         (interval (plist-get flashcard :interval))
-         (flashcard-type (plist-get flashcard :type))
-         (marker (org-id-find id 'marker))
-	 (save-handler (org-study--get-handler flashcard-type :save)))
-    (when marker
-      (with-current-buffer (marker-buffer marker)
-        (save-excursion
-          (goto-char (marker-position marker))
-          (funcall save-handler flashcard)
-        (save-buffer))))))
 
 (defun andy/org-study/update-card-sm2 (flashcard quality)
   (let ((repetition (plist-get flashcard :repetition))
