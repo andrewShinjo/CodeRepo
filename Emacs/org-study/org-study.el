@@ -16,29 +16,6 @@
 (defvar due-flashcards nil "Current list of due cards in a study session.")
 (defvar randomized-queue nil "Current list of markers for the processing queue.")
 
-;;; SINGLE Implementation
-
-(defun org-study--save-single (flashcard)
-  "Save SINGLE flashcard properties at point.
-FLASHCARD is a plist with :due, :repetition, :ease-factor, :interval."
-  (let ((due (plist-get flashcard :due))
-	(repetition (plist-get flashcard :repetition))
-	(ease-factor (plist-get flashcard :ease-factor))
-	(interval (plist-get flashcard :interval)))
-    (org-entry-put (point) SINGLE-DUE-PROPERTY due)
-    (org-entry-put (point) SINGLE-REPETITION-PROPERTY (number-to-string repetition))
-    (org-entry-put (point) SINGLE-EASE-FACTOR-PROPERTY (format "%.2f" ease-factor))
-    (org-entry-put (point) SINGLE-INTERVAL-PROPERTY (number-to-string interval))))
-
-(defun org-study--parse-single () nil)
-
-(defun org-study--props-single()
-  "Returns a list of SINGLE property names."
-  (list SINGLE-DUE-PROPERTY
-	SINGLE-INTERVAL-PROPERTY
-	SINGLE-EASE-FACTOR-PROPERTY
-	SINGLE-REPETITION-PROPERTY))
-
 ;;; BI Implementation
 
 (defun org-study--save-bi () nil)
@@ -83,9 +60,9 @@ FLASHCARD is a plist with :due, :repetition, :ease-factor, :interval."
 
 (defvar org-study--flashcard-handlers
   `(
-    (SINGLE . ((:save . org-study--save-single)
-	       (:parse . org-study--parse-single)
-	       (:props . org-study--props-single)))
+    (SINGLE . ((:save . andy/org-study/flashcard-single/save)
+	       (:parse . andy/org-study/flashcard-single/parse)
+	       (:props . andy/org-study/flashcard-single/properties)))
 
     (BI . ((:save . org-study--save-bi)
 	   (:parse . org-study--parse-bi)
