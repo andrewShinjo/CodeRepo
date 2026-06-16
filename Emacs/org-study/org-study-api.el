@@ -20,7 +20,6 @@
   (interactive)
 
   (let* (
-	 ;; Get all Org files
 	 (all-files (directory-files-recursively org-directory ORG-FILE-REGEX))
 
 	 ;; Get all headings

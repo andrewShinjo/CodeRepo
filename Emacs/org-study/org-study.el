@@ -1,6 +1,10 @@
 ;;; org-study.el --- Simple SRS and Curation Queue for Org Mode
 
 (require 'cl-lib)
+(require 'flashcard-bi)
+(require 'flashcard-cloze)
+(require 'flashcard-single)
+(require 'flashcard-treecloze)
 (require 'org-element)
 
 ;; --- Constants for SM2 Properties ---
@@ -8,38 +12,6 @@
 (defconst TREECLOZE-HASH-PROPERTY "TREE_CLOZE_HASH")
 
 ;; Flashcard Properties
-
-;; Flashcard Properties -- SINGLE
-(defconst SINGLE-DUE-PROPERTY "SINGLE_DUE")
-(defconst SINGLE-INTERVAL-PROPERTY "SINGLE_INTERVAL")
-(defconst SINGLE-EASE-FACTOR-PROPERTY "SINGLE_EASE_FACTOR")
-(defconst SINGLE-REPETITION-PROPERTY "SINGLE_REPETITION")
-
-;; Flashcard Properties -- BI
-(defconst BI-DUE-FORWARD-PROPERTY "BI_FORWARD_DUE")
-(defconst BI-INTERVAL-FORWARD-PROPERTY "BI_INTERVAL_FORWARD")
-(defconst BI-EASE-FACTOR-FORWARD-PROPERTY "BI_EASE_FACTOR_FORWARD")
-(defconst BI-REPETITION-FORWARD-PROPERTY "BI_REPETITION_FORWARD")
-(defconst BI-DUE-REVERSE-PROPERTY "BI_REVERSE_DUE")
-(defconst BI-INTERVAL-REVERSE-PROPERTY "BI_INTERVAL_REVERSE")
-(defconst BI-EASE-FACTOR-REVERSE-PROPERTY "BI_EASE_FACTOR_REVERSE")
-(defconst BI-REPETITION-REVERSE-PROPERTY "BI_REPETITION_REVERSE")
-
-;; Flashcard Properties -- CLOZE
-(defconst CLOZE-DUE-PROPERTY-PREFIX "CLOZE_DUE_")
-(defconst CLOZE-INTERVAL-PROPERTY-PREFIX "CLOZE_INTERVAL_")
-(defconst CLOZE-EASE-FACTOR-PROPERTY-PREFIX "CLOZE_EASE_FACTOR_")
-(defconst CLOZE-REPETITION-PROPERTY-PREFIX "CLOZE_REPETITION_")
-
-;; Flashcard Properties -- TREECLOZE
-(defconst TREECLOZE-DUE-PROPERTY-PREFIX "TREECLOZE_DUE_")
-(defconst TREECLOZE-INTERVAL-PROPERTY-PREFIX "TREECLOZE_INTERVAL_")
-(defconst TREECLOZE-EASE-FACTOR-PROPERTY-PREFIX "TREECLOZE_EASE_FACTOR_")
-(defconst TREECLOZE-REPETITION-PROPERTY-PREFIX "TREECLOZE_REPETITION_")
-
-(defconst SINGLE-DELIMITER " :-> ")
-(defconst BI-DELIMITER " :<-> ")
-(defconst TREECLOZE-TAG "treecloze")
 
 (defvar due-flashcards nil "Current list of due cards in a study session.")
 (defvar randomized-queue nil "Current list of markers for the processing queue.")
