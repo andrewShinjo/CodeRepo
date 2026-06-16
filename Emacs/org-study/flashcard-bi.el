@@ -11,4 +11,19 @@
 (defconst BI-EASE-FACTOR-REVERSE-PROPERTY "BI_EASE_FACTOR_REVERSE")
 (defconst BI-REPETITION-REVERSE-PROPERTY "BI_REPETITION_REVERSE")
 
+(defun andy/org-study/flashcard-bi/save () nil)
+
+(defun andy/org-study/flashcard-bi/parse () nil)
+
+(defun andy/org-study/flashcard-bi/properties ()
+  "Returns a list of BI property names."
+  (list BI-DUE-FORWARD-PROPERTY
+	BI-INTERVAL-FORWARD-PROPERTY
+	BI-EASE-FACTOR-FORWARD-PROPERTY
+	BI-REPETITION-FORWARD-PROPERTY
+	BI-DUE-REVERSE-PROPERTY
+	BI-INTERVAL-REVERSE-PROPERTY
+	BI-EASE-FACTOR-REVERSE-PROPERTY
+	BI-REPETITION-REVERSE-PROPERTY))
+
 (provide 'flashcard-bi)
