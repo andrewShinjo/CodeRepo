@@ -1,10 +1,7 @@
 ;;; org-study.el --- Simple SRS and Curation Queue for Org Mode
 
 (require 'cl-lib)
-(require 'flashcard-bi)
-(require 'flashcard-cloze)
-(require 'flashcard-single)
-(require 'flashcard-treecloze)
+(require 'flashcard)
 (require 'org-element)
 
 ;; --- Constants for SM2 Properties ---
@@ -15,51 +12,6 @@
 
 (defvar due-flashcards nil "Current list of due cards in a study session.")
 (defvar randomized-queue nil "Current list of markers for the processing queue.")
-
-;;; CLOZE Implementation
-
-(defun org-study--save-cloze () nil)
-(defun org-study--parse-bi () nil)
-
-(defun org-study--props-cloze ()
-  "Returns a list of CLOZE property names."
-  (list CLOZE-DUE-PROPERTY-PREFIX
-	CLOZE-INTERVAL-PROPERTY-PREFIX
-	CLOZE-EASE-FACTOR-PROPERTY-PREFIX
-	CLOZE-REPETITION-PROPERTY-PREFIX))
-
-;;; TREECLOZE Implementation
-
-(defun org-study--save-treecloze () nil)
-(defun org-study--parse-treecloze() nil)
-
-(defun org-study--props-treecloze ()
-  "Returns a list of TREECLOZE property names."
-  (list TREECLOZE-DUE-PROPERTY-PREFIX
-	TREECLOZE-INTERVAL-PROPERTY-PREFIX
-	TREECLOZE-EASE-FACTOR-PROPERTY-PREFIX
-	TREECLOZE-REPETITION-PROPERTY-PREFIX))
-
-;;; Dispatch Table
-
-(defvar org-study--flashcard-handlers
-  `(
-    (SINGLE . ((:save . andy/org-study/flashcard-single/save)
-	       (:parse . andy/org-study/flashcard-single/parse)
-	       (:props . andy/org-study/flashcard-single/properties)))
-
-    (BI . ((:save . andy/org-study/flashcard-bi/save)
-	   (:parse . andy/org-study/flashcard-bi/parse)
-	   (:props . andy/org-study/flashcard-bi/properties)))
-
-    (CLOZE . ((:save . org-study--save-cloze)
-	      (:parse . org-study--parse-cloze)
-	      (:props . org-study--props-cloze)))
-
-    (TREECLOZE . ((:save . org-study--save-treecloze)
-		  (:parse . org-study--parse-treecloze)
-		  (:props . org-study--props-treecloze)))
-    ))
 
 (defun org-study--get-handler (type operation)
   "Get handler function for TYPE and OPERATION (:save, :parse, :interval)."
