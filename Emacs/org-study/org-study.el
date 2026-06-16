@@ -97,38 +97,8 @@
       (with-current-buffer (marker-buffer marker)
         (save-excursion
           (goto-char (marker-position marker))
-          (cond
-           ((eq flashcard-type 'SINGLE)
-	    (funcall save-handler flashcard))
-	   ;; TODO: implement BI in dispatch table.
-           ((eq flashcard-type 'BI)
-            (let ((bi-type (plist-get flashcard :bi-type)))
-              (cond
-               ((eq bi-type 'FORWARD)
-                (org-entry-put (point) BI-DUE-FORWARD-PROPERTY due)
-                (org-entry-put (point) BI-REPETITION-FORWARD-PROPERTY (number-to-string repetition))
-                (org-entry-put (point) BI-EASE-FACTOR-FORWARD-PROPERTY (format "%.2f" ease-factor))
-                (org-entry-put (point) BI-INTERVAL-FORWARD-PROPERTY (number-to-string interval)))
-               ((eq bi-type 'REVERSE)
-                (org-entry-put (point) BI-DUE-REVERSE-PROPERTY due)
-                (org-entry-put (point) BI-REPETITION-REVERSE-PROPERTY (number-to-string repetition))
-                (org-entry-put (point) BI-EASE-FACTOR-REVERSE-PROPERTY (format "%.2f" ease-factor))
-                (org-entry-put (point) BI-INTERVAL-REVERSE-PROPERTY (number-to-string interval))))))
-	   ;; TODO: Implement CLOZE in dispatch table.
-           ((eq flashcard-type 'CLOZE)
-            (let ((suffix (number-to-string (plist-get flashcard :cloze-idx))))
-              (org-entry-put (point) (concat CLOZE-DUE-PROPERTY-PREFIX suffix) due)
-              (org-entry-put (point) (concat CLOZE-REPETITION-PROPERTY-PREFIX suffix) (number-to-string repetition))
-              (org-entry-put (point) (concat CLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix) (format "%.2f" ease-factor))
-              (org-entry-put (point) (concat CLOZE-INTERVAL-PROPERTY-PREFIX suffix) (number-to-string interval))))
-	   ;; TODO: Implement TREECLOZE in dispatch table.
-           ((eq flashcard-type 'TREECLOZE)
-            (let ((suffix (number-to-string (plist-get flashcard :cloze-idx))))
-              (org-entry-put (point) (concat TREECLOZE-DUE-PROPERTY-PREFIX suffix) due)
-              (org-entry-put (point) (concat TREECLOZE-REPETITION-PROPERTY-PREFIX suffix) (number-to-string repetition))
-              (org-entry-put (point) (concat TREECLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix) (format "%.2f" ease-factor))
-              (org-entry-put (point) (concat TREECLOZE-INTERVAL-PROPERTY-PREFIX suffix) (number-to-string interval))))))
-        (save-buffer)))))
+          (funcall save-handler flashcard)
+        (save-buffer))))))
 
 (defun andy/org-study/update-card-sm2 (flashcard quality)
   (let ((repetition (plist-get flashcard :repetition))

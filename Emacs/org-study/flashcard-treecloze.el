@@ -6,7 +6,12 @@
 (defconst TREECLOZE-REPETITION-PROPERTY-PREFIX "TREECLOZE_REPETITION_")
 (defconst TREECLOZE-TAG "treecloze")
 
-(defun andy/org-study/flashcard-treecloze/save () nil)
+(defun andy/org-study/flashcard-treecloze/save ()
+  (let ((suffix (number-to-string (plist-get flashcard :cloze-idx))))
+    (org-entry-put (point) (concat TREECLOZE-DUE-PROPERTY-PREFIX suffix) due)
+    (org-entry-put (point) (concat TREECLOZE-REPETITION-PROPERTY-PREFIX suffix) (number-to-string repetition))
+    (org-entry-put (point) (concat TREECLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix) (format "%.2f" ease-factor))
+    (org-entry-put (point) (concat TREECLOZE-INTERVAL-PROPERTY-PREFIX suffix) (number-to-string interval))))
 
 (defun andy/org-study/flashcard-treecloze/parse () nil)
 
@@ -18,3 +23,4 @@
 	TREECLOZE-REPETITION-PROPERTY-PREFIX))
 
 (provide 'flashcard-treecloze)
+
