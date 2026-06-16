@@ -1,0 +1,10 @@
+;;; flashcard-single.el
+
+(defconst SINGLE-DELIMITER " :-> ")
+
+(defconst SINGLE-DUE-PROPERTY "SINGLE_DUE")
+(defconst SINGLE-INTERVAL-PROPERTY "SINGLE_INTERVAL")
+(defconst SINGLE-EASE-FACTOR-PROPERTY "SINGLE_EASE_FACTOR")
+(defconst SINGLE-REPETITION-PROPERTY "SINGLE_REPETITION")
+
+(provide 'flashcard-single)

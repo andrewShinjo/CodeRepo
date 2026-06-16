@@ -15,11 +15,13 @@
 ;;; Emacs
 
 (setq make-backup-files nil)
-(global-display-line-numbers-mode 1) ;; Always show line number
+(global-display-line-numbers-mode 1)
 (tool-bar-mode -1)
 
-(set-frame-parameter nil 'fullscreen 'maximized) ;; Maximize Emacs window when I open it
+(set-frame-parameter nil 'fullscreen 'maximized)
 
 ;;; Org mode
 
 (setq org-directory (expand-file-name "~/Documents/Org"))
+
+
