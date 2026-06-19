@@ -2,6 +2,7 @@
 
 (require 'cl-lib)
 (require 'flashcard)
+(require 'flashcard-single)
 (require 'org-element)
 
 ;; --- Constants for SM2 Properties ---
@@ -95,12 +96,15 @@
       (plist-put new-card :repetition (if (>= quality 3) (1+ repetition) 0))
       (plist-put new-card :ease-factor ease-factor)
       (plist-put new-card :interval interval)
-      (plist-put new-card :due (format-time-string "%Y-%m-%d %H:%M" (time-add (current-time) (days-to-time interval))))
+      (plist-put new-card :due (format-time-string "%Y-%m-%d %H:%M" (time-add (current-time)
+									      (days-to-time interval))))
       new-card)))
 
 (defun andy/org-study/get-flashcards-in-org-file (org-file)
   (with-current-buffer (find-file-noselect org-file)
-    (let ((all-flashcards '()) (now (current-time)))
+    (let (
+	  (all-flashcards '())
+	  (now (current-time)))
       (org-map-entries
        (lambda ()
          (let ((flashcard-types (andy/org-study/get-flashcard-types-on-heading-at-point))
@@ -111,19 +115,9 @@
            (dolist (type flashcard-types)
              (cond
               ((eq type 'SINGLE)
-               (let* ((due (org-entry-get nil SINGLE-DUE-PROPERTY))
-                      (is-due (or (not due) (time-less-p (date-to-time due) now))))
-                 (when is-due
-                   (let* ((text  (org-get-heading 'no-todo 'no-tags))
-                          (tokens (string-split text SINGLE-DELIMITER)))
-                     (push (list :org-file org-file :ID ID 
-                                 :question (concat context "\n" (make-string level ?*) " " (nth 0 tokens))
-                                 :answer (or (nth 1 tokens) "No answer") :due (or due "")
-                                 :repetition (string-to-number (or (org-entry-get nil SINGLE-REPETITION-PROPERTY) "0"))
-                                 :ease-factor (string-to-number (or (org-entry-get nil SINGLE-EASE-FACTOR-PROPERTY) "2.5"))
-                                 :interval (string-to-number (or (org-entry-get nil SINGLE-INTERVAL-PROPERTY) "0"))
-                                 :type 'SINGLE)
-                           heading-flashcards)))))
+	       (let ((result (andy/org-study/flashcard-single/parse org-file now)))
+		 (when result
+		   (push result all-flashcards)))) 	 
               ((eq type 'BI)
                (let* ((text (org-get-heading 'no-todo 'no-tags))
                       (tokens (string-split text BI-DELIMITER)))
