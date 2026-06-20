@@ -4,6 +4,7 @@
 (require 'flashcard)
 (require 'flashcard-single)
 (require 'org-element)
+(require 'org-heading-at-point)
 
 ;; --- Constants for SM2 Properties ---
 (defconst HASH-PROPERTY "HASH")
@@ -63,14 +64,13 @@
   (interactive)
   (let ((flashcard (car due-flashcards)))
     (setcar due-flashcards (andy/org-study/update-card-sm2 flashcard 1))
-    (andy/org-study/flashcard-save)
+    (andy/org-study/flashcard/save)
     (pop due-flashcards)
     (andy/org-study/display-flashcard-question)))
 
 ;;; --- Core SRS Logic ---
 
 (defun andy/org-study/shuffle-list (list)
-  "Returns a new list with elements of LIST in random order. Uses Fisher-Yates shuffle algorithm. Preserves all elements."
   (let ((vec (vconcat list))
         (len (length list)))
     (dotimes (i len)
@@ -102,118 +102,29 @@
 
 (defun andy/org-study/get-flashcards-in-org-file (org-file)
   (with-current-buffer (find-file-noselect org-file)
-    (let (
-	  (all-flashcards '())
-	  (now (current-time)))
+    (let ((all-flashcards '())
+          (now (current-time)))
       (org-map-entries
        (lambda ()
-         (let ((flashcard-types (andy/org-study/get-flashcard-types-on-heading-at-point))
-               (heading-flashcards '())
-               (context (andy/org-study/get-question-context-at-point))
-               (level (org-outline-level))
-               (ID (org-entry-get nil "ID")))
-           (dolist (type flashcard-types)
-             (cond
-              ((eq type 'SINGLE)
-	       (let ((result (andy/org-study/flashcard-single/parse org-file now)))
-		 (when result
-		   (push result all-flashcards)))) 	 
-              ((eq type 'BI)
-               (let* ((text (org-get-heading 'no-todo 'no-tags))
-                      (tokens (string-split text BI-DELIMITER)))
-                 (let* ((f-due (org-entry-get nil BI-DUE-FORWARD-PROPERTY))
-                        (is-f (or (not f-due) (time-less-p (date-to-time f-due) now))))
-                   (when is-f
-                     (push (list :org-file org-file :ID ID 
-                                 :question (concat context "\n" (make-string level ?*) " " (nth 0 tokens))
-                                 :answer (or (nth 1 tokens) "No answer") :due (or f-due "")
-                                 :repetition (string-to-number (or (org-entry-get nil BI-REPETITION-FORWARD-PROPERTY) "0"))
-                                 :ease-factor (string-to-number (or (org-entry-get nil BI-EASE-FACTOR-FORWARD-PROPERTY) "2.5"))
-                                 :interval (string-to-number (or (org-entry-get nil BI-INTERVAL-FORWARD-PROPERTY) "0"))
-                                 :type 'BI :bi-type 'FORWARD)
-                           heading-flashcards)))
-                 (let* ((r-due (org-entry-get nil BI-DUE-REVERSE-PROPERTY))
-                        (is-r (or (not r-due) (time-less-p (date-to-time r-due) now))))
-                   (when is-r
-                     (push (list :org-file org-file :ID ID 
-                                 :question (concat context "\n" (make-string level ?*) " " (nth 1 tokens))
-                                 :answer (or (nth 0 tokens) "No answer") :due (or r-due "")
-                                 :repetition (string-to-number (or (org-entry-get nil BI-REPETITION-REVERSE-PROPERTY) "0"))
-                                 :ease-factor (string-to-number (or (org-entry-get nil BI-EASE-FACTOR-REVERSE-PROPERTY) "2.5"))
-                                 :interval (string-to-number (or (org-entry-get nil BI-INTERVAL-REVERSE-PROPERTY) "0"))
-                                 :type 'BI :bi-type 'REVERSE)
-                           heading-flashcards)))))
-              ((eq type 'CLOZE)
-               (let* ((text  (org-get-heading 'no-todo 'no-tags))
-                      (answers '()) (start 0))
-                 (while (string-match "\\*\\([^*]+\\)\\*" text start)
-                   (push (match-string 1 text) answers)
-                   (setq start (match-end 0)))
-                 (setq answers (nreverse answers))
-                 (dotimes (i (length answers))
-                   (let* ((suffix (number-to-string i))
-                          (due (org-entry-get nil (concat CLOZE-DUE-PROPERTY-PREFIX suffix)))
-                          (is-due (or (not due) (time-less-p (date-to-time due) now))))
-                     (when is-due
-                       (push (list :org-file org-file :ID ID
-                                   :question (concat context "\n" (make-string level ?*) " " (andy/org-study/make-cloze-question text i))
-                                   :answer (nth i answers) :due (or due "")
-                                   :repetition (string-to-number (or (org-entry-get nil (concat CLOZE-REPETITION-PROPERTY-PREFIX suffix)) "0"))
-                                   :ease-factor (string-to-number (or (org-entry-get nil (concat CLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix)) "2.5"))
-                                   :interval (string-to-number (or (org-entry-get nil (concat CLOZE-INTERVAL-PROPERTY-PREFIX suffix)) "0"))
-                                   :type 'CLOZE :cloze-idx i)
-                             heading-flashcards))))))
-              ((eq type 'TREECLOZE)
-               (let* ((parent  (org-get-heading 'no-todo 'no-tags))
-                      (children-data '()))
-                 (save-excursion
-                   (when (org-goto-first-child)
-                     (push (list :title (org-get-heading 'no-todo 'no-tags)
-                                 :body (andy/org-heading-at-point/get-body-text)) children-data)
-                     (while (org-get-next-sibling)
-                       (push (list :title (org-get-heading 'no-todo 'no-tags)
-                                   :body (andy/org-heading-at-point/get-body-text)) children-data))))
-                 (setq children-data (nreverse children-data))
-                 (dotimes (i (length children-data))
-                   (let* ((suffix (number-to-string i))
-                          (due (org-entry-get nil (concat TREECLOZE-DUE-PROPERTY-PREFIX suffix)))
-                          (is-due (or (not due) (time-less-p (date-to-time due) now))))
-                     (when is-due
-                       (let ((q-lines '()) (target-child (nth i children-data)))
-                         (dotimes (j (length children-data))
-                           (let* ((child (nth j children-data))
-                                  (is-target (= i j))
-                                  (display-title (if is-target "[...]" (plist-get child :title)))
-                                  (display-body (if is-target "" (let ((b (plist-get child :body))) (if (string-empty-p b) "" (concat "\n" b))))))
-                             (push (format "%s %s%s" (make-string (1+ level) ?*) display-title display-body) q-lines)))
-                         (push (list :org-file org-file :ID ID
-                                     :question (concat context "\n" (make-string level ?*) " " parent "\n" (mapconcat #'identity (nreverse q-lines) "\n"))
-                                     :answer (concat (plist-get target-child :title) "\n\n" (plist-get target-child :body))
-                                     :due (or due "")
-                                     :repetition (string-to-number (or (org-entry-get nil (concat TREECLOZE-REPETITION-PROPERTY-PREFIX suffix)) "0"))
-                                     :ease-factor (string-to-number (or (org-entry-get nil (concat TREECLOZE-EASE-FACTOR-PROPERTY-PREFIX suffix)) "2.5"))
-                                     :interval (string-to-number (or (org-entry-get nil (concat TREECLOZE-INTERVAL-PROPERTY-PREFIX suffix)) "0"))
-                                     :type 'TREECLOZE :cloze-idx i)
-                               heading-flashcards)))))))))
-           (setq all-flashcards (append all-flashcards heading-flashcards))))
+         (let ((types (andy/org-study/get-flashcard-types-on-heading-at-point)))
+           (dolist (type types)
+             (when-let ((parse-fn (org-study--get-handler type :parse)))
+               (let ((result (funcall parse-fn org-file now)))
+                 (when result
+                   (if (keywordp (car result))
+                       (push result all-flashcards)
+                     (setq all-flashcards
+                           (nconc (cl-copy-list result) all-flashcards)))))))))
        nil 'file)
       (nreverse all-flashcards))))
-
-(defun andy/org-study/make-cloze-question (text target-idx)
-  (let ((idx 0) (result text))
-    (while (string-match "\\*\\([^*]+\\)\\*" result)
-      (if (= idx target-idx) (setq result (replace-match "[...]" t t result))
-        (setq result (replace-match (match-string 1 result) t t result)))
-      (setq idx (1+ idx)))
-    result))
 
 (defun andy/org-study/delete-properties ()
   (let ((types (andy/org-study/get-flashcard-types-on-heading-at-point)))
     (when types
       (let* ((text (org-get-heading 'no-todo 'no-tags))
-             (new-hash (number-to-string (sxhash text)))
+             (new-hash (secure-hash 'sha256 text))
              (old-hash (org-entry-get nil HASH-PROPERTY))
-             (new-tree-hash (number-to-string (sxhash (andy/org-study/serialize-child-headings))))
+             (new-tree-hash (secure-hash 'sha256 (andy/org-study/serialize-child-headings)))
              (old-tree-hash (org-entry-get nil TREECLOZE-HASH-PROPERTY)))
         (when (not (equal new-hash old-hash))
           (dolist (p (list SINGLE-DUE-PROPERTY SINGLE-INTERVAL-PROPERTY SINGLE-EASE-FACTOR-PROPERTY SINGLE-REPETITION-PROPERTY
@@ -239,17 +150,6 @@
       (when (org-goto-first-child)
 	(push (org-get-heading 'no-todo 'no-tags) children) (while (org-get-next-sibling) (push (org-get-heading 'no-todo 'no-tags) children)))) (mapconcat #'identity (sort children #'string<) " | ")))
 
-(defun andy/org-study/get-flashcard-types-on-heading-at-point ()
-  (let* ((text (org-get-heading 'no-todo 'no-tags))
-         (tags (org-get-tags nil t))
-         (types nil))
-    (unless (or (cl-some (lambda (tag) (equal "edit-later" tag)) tags)
-                (string-match-p ":edit-later:" text))
-      (when (string-match-p SINGLE-DELIMITER text) (push 'SINGLE types))
-      (when (string-match-p BI-DELIMITER text) (push 'BI types))
-      (when (member TREECLOZE-TAG tags) (push 'TREECLOZE types))
-      (when (string-match-p "\\*[^*]+\\*" text) (push 'CLOZE types)))
-    types))
 
 (defun andy/org-study/show-answer ()
   "Reveals the answer in the flashcard buffer, bypassing read-only mode."
@@ -298,24 +198,9 @@
 
 ;; --- Helper Functions ---
 
-(defun andy/org-heading-at-point/get-body-text ()
-  (save-excursion
-    (org-back-to-heading t) (org-end-of-meta-data t)
-    (let ((lines '()))
-      (while (and (not (eobp)) (not (looking-at "^\\*+ ")))
-        (push (buffer-substring-no-properties (line-beginning-position) (line-end-position)) lines)
-        (forward-line 1))
-      (string-trim (mapconcat #'identity (nreverse lines) "\n")))))
-
 (defun andy/org-file/get-all-org-files-from-directory-recursively (dir)
   (let ((files (directory-files-recursively dir "\\.org$")))
     (cl-remove-if (lambda (f) (string-match-p "/\\.#\\|/#\\|~$\\|^\\." (file-name-nondirectory f))) files)))
 
-(defun andy/org-study/get-question-context-at-point ()
-  (save-excursion
-    (let (ctx)
-      (while (org-up-heading-safe)
-        (push (concat (make-string (org-outline-level) ?*) " " (org-get-heading 'no-todo 'no-tags) "\n\n" (andy/org-heading-at-point/get-body-text)) ctx))
-      (mapconcat #'identity ctx "\n"))))
 
 (provide 'org-study)
