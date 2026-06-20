@@ -1,3 +1,4 @@
 [submodule "Emacs"]
 	path = Emacs
 	url = https://github.com/andrewShinjo/Emacs-Config
+	branch = main
