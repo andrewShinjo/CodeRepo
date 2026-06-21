@@ -9,6 +9,9 @@ import SwiftUI
 
 struct IgoBoard: View {
 	
+	@State private var mouseLocation: CGPoint = .zero
+	@State private var isHovering = false
+	
 	let BOARD_COLOR: Color = Color(
 		red: 0.85,
 		green: 0.70,
@@ -60,7 +63,6 @@ struct IgoBoard: View {
 			}
 			
 			// Draw star points
-			
 			for i in [3, 9, 15] {
 				for j in [3, 9, 15] {
 					
@@ -78,10 +80,44 @@ struct IgoBoard: View {
 				}
 			}
 			
+			// Draw ghost piece
 			
-			
+			if isHovering {
+				let step = (size.width - 40) / CGFloat(ROWS - 1)
+				let col = Int(round((mouseLocation.x - 20) / step))
+				let row = Int(round((mouseLocation.y - 20) / step))
+				
+				if (0..<ROWS).contains(col) && (0..<ROWS).contains(row) {
+						let centerX = CGFloat(col) * step + 20.5
+						let centerY = CGFloat(row) * step + 20.5
+						let radius: CGFloat = step * 0.45
+						
+						let stoneRect = CGRect(
+							x: centerX - radius,
+							y: centerY - radius,
+							width: radius * 2,
+							height: radius * 2
+						)
+						context.fill(
+							Path(ellipseIn: stoneRect),
+							with: .color(.black.opacity(0.5))
+						)
+				}
+			}
 		}
 		.aspectRatio(1, contentMode: .fit)
+		.onContinuousHover { phase in
+			
+			switch phase {
+			case .active(let location):
+				mouseLocation = location
+				isHovering = true
+				print("Moving at \(location)")
+			case .ended:
+				isHovering = false
+				mouseLocation = .zero
+			}
+		}
 	}
 }
 
