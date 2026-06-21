@@ -28,6 +28,7 @@ struct IgoBoard: View {
 			let y: CGFloat = 20
 			let step = (size.width - 40) / CGFloat(ROWS - 1)
 			
+			// Draw vertical lines.
 			for i in 0...ROWS-1 {
 				var linePath = Path()
 				let x = CGFloat(i) * step + 20 + 0.5
@@ -43,6 +44,7 @@ struct IgoBoard: View {
 				)
 			}
 			
+			// Draw horizontal lines.
 			for i in 0...ROWS-1 {
 				var linePath = Path()
 				let y = CGFloat(i) * step + 20 + 0.5
@@ -56,6 +58,28 @@ struct IgoBoard: View {
 					lineWidth: LINE_WIDTH
 				)
 			}
+			
+			// Draw star points
+			
+			for i in [3, 9, 15] {
+				for j in [3, 9, 15] {
+					
+					let dotRect = CGRect(
+						x: CGFloat(i) * step + 16,
+						y: CGFloat(j) * step + 16,
+						width: 9,
+						height: 9
+					)
+					
+					context.fill(
+						Path(ellipseIn: dotRect),
+						with: .color(.black)
+					)
+				}
+			}
+			
+			
+			
 		}
 		.aspectRatio(1, contentMode: .fit)
 	}
