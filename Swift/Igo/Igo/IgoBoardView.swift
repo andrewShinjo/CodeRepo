@@ -1,5 +1,5 @@
 //
-//  IgoBoard.swift
+//  IgoBoardView.swift
 //  Igo
 //
 //  Created by Andrew Shinjo on 6/20/26.
@@ -107,7 +107,6 @@ struct IgoBoard: View {
 		}
 		.aspectRatio(1, contentMode: .fit)
 		.onContinuousHover { phase in
-			
 			switch phase {
 			case .active(let location):
 				mouseLocation = location
